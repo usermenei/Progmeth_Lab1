@@ -1,5 +1,7 @@
 package logic;
 
+import javax.smartcardio.Card;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -8,40 +10,88 @@ import java.io.FileNotFoundException;
 public class CardUtil {
 	
 	public static boolean isExistsInList(UnitCard card, ArrayList<UnitCard> list) {
-		
-		//TODO: Fill Code
+		for(UnitCard uc:list){
+			if(uc.equals(card)){
+				return true;
+			}
+		}
 		return false;
-
 	}
 	
 	public static boolean isExistsInList(UnitDeck deck, ArrayList<UnitDeck> list) {
-		
-		//TODO: Fill Code
+		for(UnitDeck ud:list){
+			if(ud.equals(deck)){
+				return true;
+			}
+		}
 		return false;
 
 	}
 	
 	public static boolean cardExistsInDeckList(ArrayList<UnitDeck> deckList, UnitCard cardToTest) {
-		
-		//TODO: Fill Code
+		for(UnitDeck deck:deckList){
+			for(CardCounter cc:deck.getCardsInDeck()){
+				if(cc.getCard().equals(cardToTest)){
+					return true;
+				}
+			}
+		}
 		return false;
 	}
-	
-	public static ArrayList<UnitCard> getCardsFromFile(String filename){
-		
+
+	public static ArrayList<UnitCard> getCardsFromFile(String filename) {
+
 		ArrayList<UnitCard> cardsFromFile = new ArrayList<UnitCard>();
 		InputStream inputStream = CardUtil.class.getClassLoader().getResourceAsStream(filename);
-          	if (inputStream == null) {
-                	System.out.println("Cannot find file!");
-                	return null;
-            	}
+		if (inputStream == null) {
+			System.out.println("Cannot find file!");
+			return null;
+		}
 
-            	Scanner myReader = new Scanner(inputStream);
+		Scanner myReader = new Scanner(inputStream);
+		ArrayList<UnitCard> tempCards = new ArrayList<>();
+		try {
+			while (myReader.hasNextLine()) {
 
+				String line = myReader.nextLine();
 
-		//TODO: Fill Code below
-		
-		return null;
+				ArrayList<String> list = new ArrayList<>(
+						Arrays.asList(line.split("\\s*,\\s*"))
+				);
+
+				// Must have exactly 5 fields
+				if (list.size() != 5) {
+					throw new Exception("Invalid Format all previous valid card in this file are not added");
+				}
+
+				String name = list.get(0);
+				int bloodCost = Integer.parseInt(list.get(1));
+				int power = Integer.parseInt(list.get(2));
+				int health = Integer.parseInt(list.get(3));
+				String flavorText = list.get(4);
+
+				UnitCard card = new UnitCard(
+						name,
+						bloodCost,
+						power,
+						health,
+						flavorText
+				);
+
+				tempCards.add(card);
+			}
+
+			// Only add if everything is correct
+			cardsFromFile.addAll(tempCards);
+
+		} catch (Exception e) {
+			System.out.println("Invalid Format all previous valid card in this file are not added");
+			cardsFromFile.clear();
+		} finally {
+			myReader.close();
+		}
+
+		return cardsFromFile;
 	}
 
 	public static void printCardList(ArrayList<UnitCard> cardList, boolean verbose) {
